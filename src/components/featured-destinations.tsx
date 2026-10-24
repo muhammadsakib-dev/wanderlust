@@ -11,23 +11,9 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import type { Destination } from "@/types/destination";
 
-export interface Destination {
-  _id?: string;
-  id?: string | number;
-  destinationName?: string;
-  name?: string;
-  title?: string;
-  country?: string;
-  category?: string;
-  price?: number | string;
-  duration?: string;
-  departureDate?: string;
-  imageUrl?: string;
-  image?: string;
-  description?: string;
-  rating?: number | string;
-}
+export type { Destination };
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80";
@@ -42,15 +28,24 @@ export function FeaturedDestinations() {
   // Fetch destinations from API
   React.useEffect(() => {
     let isMounted = true;
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
 
     const fetchDestinations = async () => {
       try {
-        const res = await fetch(`${baseUrl}/destinations`, {
+        // 1. Next.js proxy
+        let res = await fetch("/api/proxy/destinations", {
           headers: { "Content-Type": "application/json" },
-        });
+        }).catch(() => null);
 
-        if (res.ok) {
+        // 2. Direct fallback
+        if (!res || !res.ok) {
+          res = await fetch(`${baseUrl}/destinations`, {
+            headers: { "Content-Type": "application/json" },
+          }).catch(() => null);
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           const items: Destination[] = Array.isArray(data)
             ? data

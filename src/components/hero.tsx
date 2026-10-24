@@ -2,9 +2,12 @@
 
 import * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
 export function Hero() {
+  const router = useRouter();
   const [location, setLocation] = React.useState("Address, City Or Zip");
   const [duration, setDuration] = React.useState("Anytime/3 Days");
   const [budget, setBudget] = React.useState("$0-$3000");
@@ -12,7 +15,7 @@ export function Hero() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Searching with:", { location, duration, budget, people });
+    router.push("/destinations");
   };
 
   return (
@@ -50,20 +53,20 @@ export function Hero() {
 
         {/* Call to Actions */}
         <div className="mt-8 sm:mt-9 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 w-full max-w-md sm:max-w-none">
-          <button
-            type="button"
-            className="w-full sm:w-auto bg-[#14a1bf] hover:bg-[#108fa9] text-white font-medium text-xs sm:text-sm tracking-widest px-8 py-3.5 flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-[0.98] cursor-pointer"
+          <Link
+            href="/destinations"
+            className="w-full sm:w-auto bg-[#14a1bf] hover:bg-[#108fa9] text-white font-medium text-xs sm:text-sm tracking-widest px-8 py-3.5 flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-[0.98]"
           >
             <span>EXPLORE NOW</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
+          </Link>
 
-          <button
-            type="button"
-            className="w-full sm:w-auto bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 text-white font-medium text-xs sm:text-sm tracking-widest px-8 py-3.5 transition-all shadow-md active:scale-[0.98] cursor-pointer"
+          <Link
+            href="/destinations"
+            className="w-full sm:w-auto bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 text-white font-medium text-xs sm:text-sm tracking-widest px-8 py-3.5 transition-all shadow-md active:scale-[0.98] text-center"
           >
             VIEW DESTINATION
-          </button>
+          </Link>
         </div>
       </div>
 

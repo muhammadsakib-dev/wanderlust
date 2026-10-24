@@ -15,185 +15,49 @@ import {
   ArrowRight,
   X,
   Save,
+  Loader2,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DestinationDetailsSkeleton } from "@/components/destination-details-skeleton";
+import { useSession } from "@/lib/auth-client";
 
-export interface DestinationDetailData {
-  _id?: string;
-  id?: string | number;
-  slug?: string;
-  destinationName?: string;
-  name?: string;
-  title?: string;
-  country?: string;
-  category?: string;
-  price?: number | string;
-  duration?: string;
-  departureDate?: string;
-  imageUrl?: string;
-  image?: string;
-  description?: string;
-  rating?: number | string;
-  reviewsCount?: number | string;
-  overview?: string;
-  highlights?: string[];
-}
+import type { Destination } from "@/types/destination";
 
-const fallbackDestinationsMap: Record<string, DestinationDetailData> = {
-  "1": {
-    id: "1",
-    destinationName: "Bali Paradise",
-    country: "Nepal",
-    category: "Beach",
-    price: 2700,
-    duration: "7 Days / 6 Nights",
-    rating: 4.9,
-    reviewsCount: 234,
-    departureDate: "2026-05-15",
-    imageUrl:
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=80",
-    overview:
-      "Discover the magic of Bali with pristine beaches, ancient temples, and vibrant culture. Experience luxury resorts, tropical landscapes, and unforgettable sunsets.",
-    description:
-      "Discover the magic of Bali with pristine beaches, ancient temples, and vibrant culture. Experience luxury resorts, tropical landscapes, and unforgettable sunsets.",
-    highlights: [
-      "Luxury beachfront accommodation",
-      "Visit Uluwatu Temple at sunset",
-      "Traditional Balinese spa treatment",
-      "Private beach dinner experience",
-      "Sunrise trek to Mount Batur",
-    ],
-  },
-  "2": {
-    id: "2",
-    destinationName: "Bali Paradise",
-    country: "Indonesia",
-    category: "Beach",
-    price: 2700,
-    duration: "7 Days / 6 Nights",
-    rating: 4.8,
-    reviewsCount: 189,
-    departureDate: "2026-06-10",
-    imageUrl:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80",
-    overview:
-      "Immerse yourself in overwater villas perched above crystal blue lagoons. Experience morning yoga over the water, fresh tropical dining, and private lagoon dips.",
-    description:
-      "Immerse yourself in overwater villas perched above crystal blue lagoons. Experience morning yoga over the water, fresh tropical dining, and private lagoon dips.",
-    highlights: [
-      "Overwater private bungalow stay",
-      "Direct ocean lagoon access",
-      "Daily sunset cocktail cruise",
-      "Gourmet seafood dining",
-      "Scuba diving excursion",
-    ],
-  },
-  "3": {
-    id: "3",
-    destinationName: "Bali Paradise",
-    country: "Nepal",
-    category: "Mountain",
-    price: 2700,
-    duration: "7 Days / 6 Nights",
-    rating: 4.9,
-    reviewsCount: 312,
-    departureDate: "2026-07-01",
-    imageUrl:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80",
-    overview:
-      "Ascend to breathtaking cloud-kissed mountain valleys with panoramic terrace views. Perfect for nature lovers looking for serene meditation, fresh highland air, and scenic valley trekking.",
-    description:
-      "Ascend to breathtaking cloud-kissed mountain valleys with panoramic terrace views. Perfect for nature lovers looking for serene meditation, fresh highland air, and scenic valley trekking.",
-    highlights: [
-      "Panoramic mountain net relaxation",
-      "Guided highland valley trek",
-      "Organic farm-to-table cuisine",
-      "Mountain sunrise photography",
-      "Campfire stargazing evening",
-    ],
-  },
-  "4": {
-    id: "4",
-    destinationName: "Bali Paradise",
-    country: "Nepal",
-    category: "Cultural",
-    price: 2700,
-    duration: "7 Days / 6 Nights",
-    rating: 4.7,
-    reviewsCount: 156,
-    departureDate: "2026-08-15",
-    imageUrl:
-      "https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=1600&q=80",
-    overview:
-      "Walk among ancient stone citadel ruins, mist-shrouded green terraces, and ancient archaeological wonders with expert historians and cultural storytellers.",
-    description:
-      "Walk among ancient stone citadel ruins, mist-shrouded green terraces, and ancient archaeological wonders with expert historians and cultural storytellers.",
-    highlights: [
-      "Ancient mountain citadel tour",
-      "Exclusive early access pass",
-      "Expert local historian guide",
-      "Scenic panoramic rail ride",
-      "Traditional cultural dinner",
-    ],
-  },
-  "5": {
-    id: "5",
-    destinationName: "Bali Paradise",
-    country: "Nepal",
-    category: "Beach",
-    price: 2700,
-    duration: "7 Days / 6 Nights",
-    rating: 4.9,
-    reviewsCount: 275,
-    departureDate: "2026-09-05",
-    imageUrl:
-      "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=1600&q=80",
-    overview:
-      "Lounge along powder-white sands fringed by swaying coconut palms and tranquil aquamarine surf. An idyllic getaway for sun seekers, swimmers, and seaside leisure.",
-    description:
-      "Lounge along powder-white sands fringed by swaying coconut palms and tranquil aquamarine surf. An idyllic getaway for sun seekers, swimmers, and seaside leisure.",
-    highlights: [
-      "Private beachfront cabana",
-      "Catamaran sailing trip",
-      "Fresh tropical smoothie bar",
-      "Stand-up paddleboarding",
-      "Seaside bonfire night",
-    ],
-  },
-  "6": {
-    id: "6",
-    destinationName: "Bali Paradise",
-    country: "Nepal",
-    category: "Adventure",
-    price: 2700,
-    duration: "7 Days / 6 Nights",
-    rating: 4.8,
-    reviewsCount: 142,
-    departureDate: "2026-10-12",
-    imageUrl:
-      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1600&q=80",
-    overview:
-      "Venture through giant cactus landscapes where dramatic golden sunsets melt into shimmering waters. Experience desert off-roading, stargazing, and wilderness bliss.",
-    description:
-      "Venture through giant cactus landscapes where dramatic golden sunsets melt into shimmering waters. Experience desert off-roading, stargazing, and wilderness bliss.",
-    highlights: [
-      "Giant cactus trail expedition",
-      "Desert sunset safari",
-      "Astronomy & telescope session",
-      "Campfire barbecue feast",
-      "Wilderness eco-lodge stay",
-    ],
-  },
+export type DestinationDetailData = Destination;
+
+const DEFAULT_DESTINATION: Destination = {
+  id: "1",
+  destinationName: "Bali Paradise",
+  country: "Indonesia",
+  category: "Beach",
+  price: 2700,
+  duration: "7 Days / 6 Nights",
+  rating: 4.9,
+  reviewsCount: 234,
+  departureDate: "2026-05-15",
+  imageUrl:
+    "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=80",
+  overview:
+    "Discover pristine beaches, ancient temples, and vibrant culture. Experience luxury resorts, tropical landscapes, and unforgettable sunsets.",
+  description:
+    "Discover pristine beaches, ancient temples, and vibrant culture. Experience luxury resorts, tropical landscapes, and unforgettable sunsets.",
+  highlights: [
+    "Luxury beachfront accommodation",
+    "Visit Uluwatu Temple at sunset",
+    "Traditional Balinese spa treatment",
+    "Private beach dinner experience",
+    "Sunrise trek to Mount Batur",
+  ],
 };
 
-function getInitialDestination(slug: string): DestinationDetailData {
-  if (fallbackDestinationsMap[slug]) {
-    return fallbackDestinationsMap[slug];
-  }
-  return fallbackDestinationsMap["1"];
+const fallbackDestinationsMap: Record<string, Destination> = {
+  "1": DEFAULT_DESTINATION,
+};
+
+function getInitialDestination(slug: string): Destination {
+  return fallbackDestinationsMap[slug] || DEFAULT_DESTINATION;
 }
 
 interface DestinationDetailsProps {
@@ -202,6 +66,7 @@ interface DestinationDetailsProps {
 
 export function DestinationDetails({ slug }: DestinationDetailsProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [destination, setDestination] = React.useState<DestinationDetailData>(() =>
     getInitialDestination(slug)
   );
@@ -209,6 +74,12 @@ export function DestinationDetails({ slug }: DestinationDetailsProps) {
   const [selectedDate, setSelectedDate] = React.useState<string>("2026-05-15");
   const [isBooking, setIsBooking] = React.useState<boolean>(false);
   const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
+  const [isAdmin] = React.useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("wanderlust_admin_session") === "true";
+    }
+    return false;
+  });
 
   // Edit Modal State
   const [isEditOpen, setIsEditOpen] = React.useState<boolean>(false);
@@ -231,12 +102,18 @@ export function DestinationDetails({ slug }: DestinationDetailsProps) {
 
     const fetchDetail = async () => {
       try {
-        // 1. First try single destination endpoint: /destinations/:id
-        const res = await fetch(`${baseUrl}/destinations/${slug}`, {
+        // 1. First try single destination via proxy or backend: /destinations/:id
+        let res = await fetch(`/api/proxy/destinations/${slug}`, {
           headers: { "Content-Type": "application/json" },
-        });
+        }).catch(() => null);
 
-        if (res.ok) {
+        if (!res || !res.ok) {
+          res = await fetch(`${baseUrl}/destinations/${slug}`, {
+            headers: { "Content-Type": "application/json" },
+          }).catch(() => null);
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           const item = data?.data || data?.destination || data;
           if (isMounted && item && typeof item === "object") {
@@ -365,13 +242,21 @@ export function DestinationDetails({ slug }: DestinationDetailsProps) {
         description: editFormData.description,
       };
 
-      const res = await fetch(`${baseUrl}/destinations/${idToUpdate}`, {
+      let res = await fetch(`/api/proxy/destinations/${idToUpdate}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      }).catch(() => null);
 
-      if (!res.ok) {
+      if (!res || !res.ok) {
+        res = await fetch(`${baseUrl}/destinations/${idToUpdate}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => null);
+      }
+
+      if (res && !res.ok) {
         console.warn("Backend update returned status:", res.status);
       }
 
@@ -407,14 +292,51 @@ export function DestinationDetails({ slug }: DestinationDetailsProps) {
     }
   };
 
-  const handleBookNow = () => {
+  const handleBookNow = async () => {
+    if (!session?.user) {
+      router.push(`/login?callbackUrl=/destinations/${slug}`);
+      return;
+    }
+
     setIsBooking(true);
-    setTimeout(() => {
+    const bookingPayload = {
+      id: `b${Date.now().toString().slice(-4)}`,
+      destinationName:
+        destination.destinationName || destination.name || "Bali Paradise",
+      destinationId: destination._id || destination.id || slug,
+      departureDate: selectedDate,
+      price: destination.price ?? 1299,
+      status: "Confirmed",
+      userEmail: session.user.email,
+      userName: session.user.name || "Traveler",
+      imageUrl:
+        destination.imageUrl ||
+        destination.image ||
+        fallbackDestinationsMap["1"].imageUrl!,
+    };
+
+    try {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
+      const res = await fetch("/api/proxy/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingPayload),
+      }).catch(() => null);
+
+      if (!res || !res.ok) {
+        await fetch(`${baseUrl}/bookings`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bookingPayload),
+        }).catch(() => null);
+      }
+    } catch (err) {
+      console.warn("Failed to save booking to backend:", err);
+    } finally {
       setIsBooking(false);
-      alert(
-        `Booking confirmed for ${destination.destinationName || "Travel Package"} on ${selectedDate}!`
-      );
-    }, 600);
+      router.push("/bookings");
+    }
   };
 
   const handleDelete = async () => {
@@ -423,9 +345,15 @@ export function DestinationDetails({ slug }: DestinationDetailsProps) {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
         const idToDelete = destination._id || destination.id || slug;
-        await fetch(`${baseUrl}/destinations/${idToDelete}`, {
+        let res = await fetch(`/api/proxy/destinations/${idToDelete}`, {
           method: "DELETE",
-        });
+        }).catch(() => null);
+
+        if (!res || !res.ok) {
+          res = await fetch(`${baseUrl}/destinations/${idToDelete}`, {
+            method: "DELETE",
+          }).catch(() => null);
+        }
       } catch (err) {
         console.warn("Delete request error:", err);
       } finally {
@@ -470,26 +398,32 @@ export function DestinationDetails({ slug }: DestinationDetailsProps) {
             <span>Back to Destinations</span>
           </Link>
 
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleOpenEdit}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 hover:border-gray-800 rounded-md transition-colors cursor-pointer"
-            >
-              <Edit className="w-4 h-4" />
-              <span>Edit</span>
-            </button>
+          {/* Admin Package Controls (Only visible to authenticated administrators) */}
+          {isAdmin && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs uppercase font-semibold text-[#14a1bf] bg-[#14a1bf]/10 px-2.5 py-1">
+                Admin Controls
+              </span>
+              <button
+                type="button"
+                onClick={handleOpenEdit}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 hover:border-gray-800 rounded-md transition-colors cursor-pointer"
+              >
+                <Edit className="w-4 h-4" />
+                <span>Edit</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-500 bg-white border border-red-300 hover:bg-red-50 rounded-md transition-colors cursor-pointer active:scale-98 disabled:opacity-50"
-            >
-              <Trash2 className="w-4 h-4 text-red-500" />
-              <span>{isDeleting ? "Deleting..." : "Cancel"}</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-500 bg-white border border-red-300 hover:bg-red-50 rounded-md transition-colors cursor-pointer active:scale-98 disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4 text-red-500" />
+                <span>{isDeleting ? "Deleting..." : "Cancel"}</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Hero Banner Image */}
@@ -547,12 +481,9 @@ export function DestinationDetails({ slug }: DestinationDetailsProps) {
 
             {/* Highlights Section */}
             <div>
-              <h2 className="text-xl sm:text-2xl font-normal text-gray-900 tracking-tight mb-3">
+              <h2 className="text-xl sm:text-2xl font-normal text-gray-900 tracking-tight mb-4">
                 Highlights
               </h2>
-              <p className="text-sm sm:text-base text-gray-600 font-light leading-relaxed mb-4">
-                {overview}
-              </p>
 
               {/* Highlights 2-column checklist */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5 pt-1">
@@ -593,16 +524,48 @@ export function DestinationDetails({ slug }: DestinationDetailsProps) {
                 />
               </div>
 
-              {/* Book Now Button */}
-              <button
-                type="button"
-                onClick={handleBookNow}
-                disabled={isBooking}
-                className="w-full bg-[#14a1bf] hover:bg-[#108fa9] text-white py-3.5 px-4 font-medium text-sm tracking-wide flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-none mb-6 active:scale-[0.99] disabled:opacity-75"
-              >
-                <span>{isBooking ? "Booking..." : "Book Now"}</span>
-                <ArrowRight className="w-4 h-4 stroke-[2]" />
-              </button>
+              {/* Book Now Button or Sign In to Book */}
+              {session?.user ? (
+                <>
+                  <div className="mb-3 text-xs text-gray-600 flex items-center justify-between pb-2 border-b border-gray-100">
+                    <span className="text-gray-400">Account:</span>
+                    <span className="font-semibold text-gray-800 truncate max-w-[160px]">
+                      {session.user.name || session.user.email}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleBookNow}
+                    disabled={isBooking}
+                    className="w-full bg-[#14a1bf] hover:bg-[#108fa9] text-white py-3.5 px-4 font-medium text-sm tracking-wide flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-none mb-6 active:scale-[0.99] disabled:opacity-75"
+                  >
+                    {isBooking ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin stroke-[2]" />
+                        <span>Confirming Booking...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Book Now</span>
+                        <ArrowRight className="w-4 h-4 stroke-[2]" />
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <div className="mb-6">
+                  <Link
+                    href={`/login?callbackUrl=/destinations/${slug}`}
+                    className="w-full bg-[#14a1bf] hover:bg-[#108fa9] text-white py-3.5 px-4 font-medium text-sm tracking-wide flex items-center justify-center gap-2 transition-colors cursor-pointer rounded-none"
+                  >
+                    <span>Sign In to Book</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2]" />
+                  </Link>
+                  <p className="text-[11px] text-gray-400 text-center mt-2">
+                    Please log in to reserve this trip
+                  </p>
+                </div>
+              )}
 
               {/* Guarantees Checklist */}
               <div className="space-y-2.5 pt-2 border-t border-gray-100">

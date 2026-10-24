@@ -61,29 +61,54 @@ export function AddDestinationForm() {
     setFormData((prev) => ({ ...prev, category: value ?? "" }));
   };
 
-  
-  
-  const API_URL_BASE = process.env.NEXT_PUBLIC_BACKEND_BASE_URL; // Replace with your actual backend API URL
- 
-  
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState("");
+  const [submitSuccess, setSubmitSuccess] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
- 
-    // TODO: Send formData to your backend API
+    setIsSubmitting(true);
+    setSubmitError("");
 
-    const res = await fetch(`${API_URL_BASE}/add-destination`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+    const payload = {
+      ...formData,
+      price: Number(formData.price) || formData.price,
+    };
 
-    const data = await res.json();
-    console.log("Response from backend:", data);
-   
+    try {
+      // 1. Try Next.js proxy route first
+      let res = await fetch("/api/proxy/add-destination", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
+      // 2. If proxy route is not reachable, fallback to direct backend URL
+      if (!res.ok) {
+        const directBase =
+          process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
+        res = await fetch(`${directBase}/add-destination`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
+      }
+
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        router.push("/admin");
+      }, 700);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to add destination.";
+      setSubmitError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -92,6 +117,17 @@ export function AddDestinationForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {submitError && (
+        <div className="p-3 bg-red-50 border border-red-200 text-xs sm:text-sm text-red-600 rounded-md">
+          {submitError}
+        </div>
+      )}
+
+      {submitSuccess && (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-xs sm:text-sm text-emerald-700 rounded-md">
+          Destination created successfully! Redirecting to Admin...
+        </div>
+      )}
       {/* Destination Name */}
       <div className="space-y-2">
         <Label htmlFor="destinationName" className="text-sm font-semibold text-gray-900">
@@ -234,10 +270,11 @@ export function AddDestinationForm() {
 
         <button
           type="submit"
-          className="flex items-center gap-2 bg-[#14a1bf] hover:bg-[#108fa9] text-white px-6 py-2.5 text-sm font-medium transition-colors rounded-md cursor-pointer active:scale-[0.98]"
+          disabled={isSubmitting}
+          className="flex items-center gap-2 bg-[#14a1bf] hover:bg-[#108fa9] text-white px-6 py-2.5 text-sm font-medium transition-colors rounded-md cursor-pointer active:scale-[0.98] disabled:opacity-60"
         >
           <Save className="w-4 h-4" />
-          <span>Add Travel Package</span>
+          <span>{isSubmitting ? "Adding..." : "Add Travel Package"}</span>
         </button>
       </div>
     </form>

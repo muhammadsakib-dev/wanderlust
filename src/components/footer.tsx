@@ -22,7 +22,7 @@ export function Footer() {
         <div className="mb-12 sm:mb-16">
           <Link href="/" className="inline-block">
             <h2 className="text-4xl sm:text-5xl md:text-[54px] font-serif font-normal tracking-tight text-white">
-              Wanderlast
+              Wanderlust
             </h2>
           </Link>
           <p className="mt-3 sm:mt-4 text-sm sm:text-base text-gray-400 font-light max-w-xl">
@@ -83,7 +83,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#bookings"
+                  href="/bookings"
                   className="text-sm text-gray-400 hover:text-white transition-colors font-light"
                 >
                   My Bookings
@@ -91,7 +91,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#profile"
+                  href="/profile"
                   className="text-sm text-gray-400 hover:text-white transition-colors font-light"
                 >
                   My Profile
@@ -149,10 +149,10 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:info@wandarland.com"
+                  href="mailto:info@wanderlust.com"
                   className="text-sm text-gray-400 hover:text-white transition-colors font-light block"
                 >
-                  info@wandarland.com
+                  info@wanderlust.com
                 </a>
               </li>
             </ul>

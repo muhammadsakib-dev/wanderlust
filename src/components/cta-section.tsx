@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export function CtaSection() {
@@ -31,13 +32,13 @@ export function CtaSection() {
 
         {/* CTA Button */}
         <div className="mt-7 sm:mt-8">
-          <button
-            type="button"
-            className="bg-white hover:bg-gray-100 text-gray-900 font-medium text-xs sm:text-sm tracking-widest px-8 sm:px-10 py-3.5 sm:py-4 flex items-center justify-center gap-3 transition-all duration-200 shadow-lg active:scale-95 cursor-pointer"
+          <Link
+            href="/destinations"
+            className="bg-white hover:bg-gray-100 text-gray-900 font-medium text-xs sm:text-sm tracking-widest px-8 sm:px-10 py-3.5 sm:py-4 inline-flex items-center justify-center gap-3 transition-all duration-200 shadow-lg active:scale-95"
           >
             <span>BOOK YOUR TRIP TODAY</span>
             <ArrowRight className="w-4 h-4 text-gray-900 stroke-[2]" />
-          </button>
+          </Link>
         </div>
       </div>
     </section>

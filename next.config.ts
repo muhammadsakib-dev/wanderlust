@@ -17,11 +17,16 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'ik.imagekit.io',
-        port: '',
-        pathname: '/muhammadsakib/destinations/**',
-        search: '',
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/**",
       },
     ],
   },
@@ -37,10 +42,28 @@ const nextConfig: NextConfig = {
         destination: "/destinations/:slug*",
         permanent: true,
       },
+      {
+        source: "/sign-in",
+        destination: "/login",
+        permanent: true,
+      },
+      {
+        source: "/sign-up",
+        destination: "/signup",
+        permanent: true,
+      },
+    ];
+  },
+  async rewrites() {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
+    return [
+      {
+        source: "/api/proxy/:path*",
+        destination: `${backendUrl}/:path*`,
+      },
     ];
   },
 };
 
 export default nextConfig;
-
-// https://ik.imagekit.io/muhammadsakib/destinations/image6.png

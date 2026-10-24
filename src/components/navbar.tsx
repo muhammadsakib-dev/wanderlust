@@ -3,15 +3,33 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { User, Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { User, Menu, X, LogOut } from "lucide-react";
+import { useSession, signOut } from "@/lib/auth-client";
 
 export function Navbar() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const isHome = pathname === "/";
   const isDestinations = pathname.startsWith("/destinations");
+  const isBookings = pathname === "/bookings";
+  const isLogin = pathname === "/login";
+  const isSignup = pathname === "/signup";
+  const isProfile = pathname === "/profile";
+  const isAdmin = pathname.startsWith("/admin");
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      console.error("Sign out error:", err);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100/80 shadow-xs">
@@ -40,13 +58,21 @@ export function Navbar() {
           </Link>
           <Link
             href="/bookings"
-            className="text-gray-800 hover:text-[#14a1bf] text-[15px] font-medium tracking-wide transition-colors"
+            className={`text-[15px] font-medium tracking-wide transition-colors ${
+              isBookings
+                ? "text-[#14a1bf] border-b-2 border-[#14a1bf] pb-0.5"
+                : "text-gray-800 hover:text-[#14a1bf]"
+            }`}
           >
             My Bookings
           </Link>
           <Link
             href="/admin"
-            className="text-gray-800 hover:text-[#14a1bf] text-[15px] font-medium tracking-wide transition-colors"
+            className={`text-[15px] font-medium tracking-wide transition-colors ${
+              isAdmin
+                ? "text-[#14a1bf] border-b-2 border-[#14a1bf] pb-0.5"
+                : "text-gray-800 hover:text-[#14a1bf]"
+            }`}
           >
             Admin
           </Link>
@@ -68,25 +94,67 @@ export function Navbar() {
 
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
-          <Link
-            href="#profile"
-            className="flex items-center gap-1.5 text-gray-800 hover:text-[#14a1bf] text-[15px] font-medium tracking-wide transition-colors"
-          >
-            <User className="w-4 h-4 stroke-2" />
-            <span>Profile</span>
-          </Link>
-          <Link
-            href="#login"
-            className="text-gray-800 hover:text-[#14a1bf] text-[15px] font-medium tracking-wide transition-colors"
-          >
-            Login
-          </Link>
-          <Link
-            href="#signup"
-            className="text-gray-800 hover:text-[#14a1bf] text-[15px] font-medium tracking-wide transition-colors"
-          >
-            Sign Up
-          </Link>
+          {session?.user ? (
+            <>
+              <Link
+                href="/profile"
+                className={`flex items-center gap-2 text-[15px] font-medium tracking-wide transition-colors ${
+                  isProfile
+                    ? "text-[#14a1bf] border-b-2 border-[#14a1bf] pb-0.5"
+                    : "text-gray-800 hover:text-[#14a1bf]"
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-[#14a1bf]/10 text-[#14a1bf] flex items-center justify-center font-semibold text-xs uppercase">
+                  {session.user.name ? session.user.name[0] : <User className="w-4 h-4" />}
+                </div>
+                <span className="truncate max-w-[120px]">
+                  {session.user.name?.split(" ")[0] || "Profile"}
+                </span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="flex items-center gap-1.5 text-gray-700 hover:text-red-600 text-[15px] font-medium tracking-wide transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 stroke-[1.75]" />
+                <span>Sign Out</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/profile"
+                className={`flex items-center gap-1.5 text-[15px] font-medium tracking-wide transition-colors ${
+                  isProfile
+                    ? "text-[#14a1bf] border-b-2 border-[#14a1bf] pb-0.5"
+                    : "text-gray-800 hover:text-[#14a1bf]"
+                }`}
+              >
+                <User className="w-4 h-4 stroke-2" />
+                <span>Profile</span>
+              </Link>
+              <Link
+                href="/login"
+                className={`text-[15px] font-medium tracking-wide transition-colors ${
+                  isLogin
+                    ? "text-[#14a1bf] border-b-2 border-[#14a1bf] pb-0.5"
+                    : "text-gray-800 hover:text-[#14a1bf]"
+                }`}
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className={`text-[15px] font-medium tracking-wide transition-colors ${
+                  isSignup
+                    ? "text-[#14a1bf] border-b-2 border-[#14a1bf] pb-0.5"
+                    : "text-gray-800 hover:text-[#14a1bf]"
+                }`}
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Hamburger Toggle */}
@@ -125,43 +193,83 @@ export function Navbar() {
               Destinations
             </Link>
             <Link
-              href="#bookings"
+              href="/bookings"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-gray-800 hover:text-[#14a1bf] font-medium text-base py-1"
+              className={`font-medium text-base py-1 ${
+                isBookings ? "text-[#14a1bf]" : "text-gray-800 hover:text-[#14a1bf]"
+              }`}
             >
               My Bookings
             </Link>
             <Link
-              href="#admin"
+              href="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-gray-800 hover:text-[#14a1bf] font-medium text-base py-1"
+              className={`font-medium text-base py-1 ${
+                isAdmin ? "text-[#14a1bf]" : "text-gray-800 hover:text-[#14a1bf]"
+              }`}
             >
               Admin
             </Link>
           </nav>
           <div className="flex flex-col space-y-3 pt-1">
-            <Link
-              href="#profile"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 text-gray-800 hover:text-[#14a1bf] font-medium text-base py-1"
-            >
-              <User className="w-4 h-4 stroke-[2]" />
-              <span>Profile</span>
-            </Link>
-            <Link
-              href="#login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-gray-800 hover:text-[#14a1bf] font-medium text-base py-1"
-            >
-              Login
-            </Link>
-            <Link
-              href="#signup"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-gray-800 hover:text-[#14a1bf] font-medium text-base py-1"
-            >
-              Sign Up
-            </Link>
+            {session?.user ? (
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 font-medium text-base py-1 ${
+                    isProfile ? "text-[#14a1bf]" : "text-gray-800 hover:text-[#14a1bf]"
+                  }`}
+                >
+                  <div className="w-7 h-7 rounded-full bg-[#14a1bf]/10 text-[#14a1bf] flex items-center justify-center font-semibold text-xs uppercase">
+                    {session.user.name ? session.user.name[0] : <User className="w-4 h-4" />}
+                  </div>
+                  <span>{session.user.name || session.user.email}</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                  className="flex items-center gap-2 text-gray-700 hover:text-red-600 font-medium text-base py-1 text-left cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 stroke-[1.75]" />
+                  <span>Sign Out</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 font-medium text-base py-1 ${
+                    isProfile ? "text-[#14a1bf]" : "text-gray-800 hover:text-[#14a1bf]"
+                  }`}
+                >
+                  <User className="w-4 h-4 stroke-[2]" />
+                  <span>Profile</span>
+                </Link>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`font-medium text-base py-1 ${
+                    isLogin ? "text-[#14a1bf]" : "text-gray-800 hover:text-[#14a1bf]"
+                  }`}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`font-medium text-base py-1 ${
+                    isSignup ? "text-[#14a1bf]" : "text-gray-800 hover:text-[#14a1bf]"
+                  }`}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

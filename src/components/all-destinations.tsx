@@ -5,26 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Calendar, ArrowUpRight, ChevronDown, PlusCircle } from "lucide-react";
 import { DestinationsSkeleton } from "@/components/destinations-skeleton";
+import type { Destination } from "@/types/destination";
 
-export interface DestinationItem {
-  _id?: string;
-  id?: string | number;
-  destinationName?: string;
-  name?: string;
-  title?: string;
-  country?: string;
-  category?: string;
-  price?: number | string;
-  duration?: string;
-  departureDate?: string;
-  imageUrl?: string;
-  image?: string;
-  description?: string;
-  rating?: number | string;
-}
+export type DestinationItem = Destination;
 
 export function AllDestinations() {
-  const [destinations, setDestinations] = React.useState<DestinationItem[]>([]);
+  const [destinations, setDestinations] = React.useState<Destination[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [selectedCategory, setSelectedCategory] = React.useState<string>("ALL");
   const [selectedPriceRange, setSelectedPriceRange] = React.useState<string>("ALL");
@@ -33,17 +19,26 @@ export function AllDestinations() {
   // Fetch destinations from backend API
   React.useEffect(() => {
     let isMounted = true;
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
 
     const fetchDestinations = async () => {
       try {
-        const res = await fetch(`${baseUrl}/destinations`, {
+        // 1. Next.js proxy
+        let res = await fetch("/api/proxy/destinations", {
           headers: { "Content-Type": "application/json" },
-        });
+        }).catch(() => null);
 
-        if (res.ok) {
+        // 2. Direct fallback
+        if (!res || !res.ok) {
+          res = await fetch(`${baseUrl}/destinations`, {
+            headers: { "Content-Type": "application/json" },
+          }).catch(() => null);
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
-          const items: DestinationItem[] = Array.isArray(data)
+          const items: Destination[] = Array.isArray(data)
             ? data
             : Array.isArray(data?.data)
             ? data.data
@@ -71,41 +66,39 @@ export function AllDestinations() {
     };
   }, []);
 
-  // Filter and sort items
-  const filteredDestinations = React.useMemo(() => {
-    let list = [...destinations];
+  // Filter and sort items (React Compiler manages memoization)
+  let list = [...destinations];
 
-    // Filter by Category
-    if (selectedCategory !== "ALL") {
-      list = list.filter((item) => {
-        const cat = item.category?.toLowerCase() || "";
-        return cat === selectedCategory.toLowerCase();
-      });
-    }
+  // Filter by Category
+  if (selectedCategory !== "ALL") {
+    list = list.filter((item) => {
+      const cat = item.category?.toLowerCase() || "";
+      return cat === selectedCategory.toLowerCase();
+    });
+  }
 
-    // Filter by Price Range
-    if (selectedPriceRange === "UNDER_1500") {
-      list = list.filter((item) => Number(item.price || 0) < 1500);
-    } else if (selectedPriceRange === "1500_3000") {
-      list = list.filter((item) => {
-        const price = Number(item.price || 0);
-        return price >= 1500 && price <= 3000;
-      });
-    } else if (selectedPriceRange === "ABOVE_3000") {
-      list = list.filter((item) => Number(item.price || 0) > 3000);
-    }
+  // Filter by Price Range
+  if (selectedPriceRange === "UNDER_1500") {
+    list = list.filter((item) => Number(item.price || 0) < 1500);
+  } else if (selectedPriceRange === "1500_3000") {
+    list = list.filter((item) => {
+      const price = Number(item.price || 0);
+      return price >= 1500 && price <= 3000;
+    });
+  } else if (selectedPriceRange === "ABOVE_3000") {
+    list = list.filter((item) => Number(item.price || 0) > 3000);
+  }
 
-    // Sort items
-    if (selectedSort === "PRICE_ASC") {
-      list.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
-    } else if (selectedSort === "PRICE_DESC") {
-      list.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
-    } else if (selectedSort === "RATING_DESC") {
-      list.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
-    }
+  // Sort items
+  if (selectedSort === "PRICE_ASC") {
+    list.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+  } else if (selectedSort === "PRICE_DESC") {
+    list.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+  } else if (selectedSort === "RATING_DESC") {
+    list.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+  }
 
-    return list;
-  }, [destinations, selectedCategory, selectedPriceRange, selectedSort]);
+  const filteredDestinations = list;
 
   // If data is loading, show the clean skeleton with Suspense layout
   if (isLoading) {
