@@ -1,0 +1,20 @@
+import { AddDestinationForm } from "@/components/add-destination-form";
+
+export default function AddDestinationPage() {
+  return (
+    <section className="w-full bg-white py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        {/* Page Heading */}
+        <h1 className="text-3xl sm:text-4xl md:text-[44px] font-normal text-gray-900 tracking-tight leading-tight mb-10 sm:mb-12">
+          Add New Travel Package
+        </h1>
+
+        {/* Form Card */}
+        <div className="bg-white border border-gray-200/80 rounded-lg shadow-xs p-6 sm:p-8 md:p-10">
+          <AddDestinationForm />
+        </div>
+      </div>
+    </section>
+  );
+}
+
