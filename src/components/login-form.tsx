@@ -11,17 +11,21 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [rememberMe, setRememberMe] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage("");
     setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: Record<string, string> = Object.fromEntries(formData) as Record<string, string>;
+
+    const email = (data.email || "").trim();
+    const password = data.password || "";
+    const rememberMe = Boolean(data.rememberMe);
 
     try {
       const res = await signIn.email({
@@ -76,14 +80,14 @@ export function LoginForm() {
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-[450px] bg-white border border-gray-100 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.05)] p-7 sm:p-9 rounded-none">
+      <div className="w-full max-w-112.5 bg-white border border-gray-100 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.05)] p-7 sm:p-9 rounded-none">
         {errorMessage && (
           <div className="mb-5 p-3 text-xs sm:text-sm text-red-600 bg-red-50 border border-red-200">
             {errorMessage}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-4.5">
+        <form onSubmit={onSubmit} className="space-y-4 sm:space-y-4.5">
           {/* Email Address */}
           <div>
             <label
@@ -96,11 +100,11 @@ export function LoginForm() {
               <Mail className="absolute left-3.5 w-4 h-4 text-gray-400 stroke-[1.75]" />
               <input
                 id="email"
+                name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
+                autoComplete="email"
                 className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-gray-50/70 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#14a1bf] focus:bg-white transition-colors"
               />
             </div>
@@ -118,11 +122,11 @@ export function LoginForm() {
               <Lock className="absolute left-3.5 w-4 h-4 text-gray-400 stroke-[1.75]" />
               <input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
+                autoComplete="current-password"
                 className="w-full pl-10 pr-10 py-2.5 text-sm bg-gray-50/70 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#14a1bf] focus:bg-white transition-colors"
               />
               <button
@@ -144,9 +148,9 @@ export function LoginForm() {
           <div className="flex items-center justify-between text-xs sm:text-sm pt-0.5">
             <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600">
               <input
+                id="rememberMe"
+                name="rememberMe"
                 type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
                 className="w-4 h-4 border border-gray-300 rounded-none text-[#14a1bf] focus:ring-[#14a1bf] cursor-pointer accent-[#14a1bf]"
               />
               <span>Remember me</span>
@@ -167,7 +171,7 @@ export function LoginForm() {
               disabled={isLoading}
               className="w-full bg-[#14a1bf] hover:bg-[#108fa9] text-white py-2.5 px-4 text-sm font-medium tracking-wide transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2 rounded-none"
             >
-              {isLoading && <Loader2 className="w-4 h-4 animate-spin stroke-[2]" />}
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin stroke-2" />}
               <span>{isLoading ? "Signing In..." : "Sign In"}</span>
             </button>
           </div>
@@ -211,7 +215,7 @@ export function LoginForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>Sign Up With Google</span>
+            <span>Sign In With Google</span>
           </button>
         </div>
 

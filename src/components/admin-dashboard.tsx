@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import type { Destination } from "@/types/destination";
 import type { Booking } from "@/types/booking";
+import { logoutAdminAction } from "@/app/admin/actions";
 
 export type AdminDestinationItem = Destination;
 export type BookingItem = Booking;
@@ -35,22 +36,26 @@ export function AdminDashboard() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [categoryFilter, setCategoryFilter] = React.useState("ALL");
-  const [activeTab, setActiveTab] = React.useState<"destinations" | "bookings" | "overview">("destinations");
+  const [activeTab, setActiveTab] = React.useState<
+    "destinations" | "bookings" | "overview"
+  >("destinations");
   const [bookings, setBookings] = React.useState<Booking[]>([]);
 
-  const handleAdminLogout = () => {
+  const handleAdminLogout = async () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("wanderlust_admin_session");
       document.cookie =
         "wanderlust_admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
+    await logoutAdminAction();
     router.push("/admin/login");
     router.refresh();
   };
 
   // Edit Modal State
   const [isEditOpen, setIsEditOpen] = React.useState(false);
-  const [editingItem, setEditingItem] = React.useState<AdminDestinationItem | null>(null);
+  const [editingItem, setEditingItem] =
+    React.useState<AdminDestinationItem | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
   const [editSuccess, setEditSuccess] = React.useState(false);
 
@@ -92,10 +97,10 @@ export function AdminDashboard() {
           const items = Array.isArray(data)
             ? data
             : Array.isArray(data?.data)
-            ? data.data
-            : Array.isArray(data?.destinations)
-            ? data.destinations
-            : [];
+              ? data.data
+              : Array.isArray(data?.destinations)
+                ? data.destinations
+                : [];
           setDestinations(items);
         }
 
@@ -138,7 +143,7 @@ export function AdminDashboard() {
                 guests: b.guests || 1,
                 totalPrice: Number(b.price || b.totalPrice) || 1299,
                 status: b.status || "Confirmed",
-              })
+              }),
             );
             setBookings(formatted);
           }
@@ -187,7 +192,8 @@ export function AdminDashboard() {
 
     setIsSaving(true);
     const idToUpdate = editingItem._id || editingItem.id;
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
 
     const payload = {
       destinationName: editFormData.destinationName,
@@ -225,7 +231,7 @@ export function AdminDashboard() {
             return { ...dest, ...payload };
           }
           return dest;
-        })
+        }),
       );
 
       setEditSuccess(true);
@@ -247,13 +253,14 @@ export function AdminDashboard() {
 
     if (
       !confirm(
-        `Are you sure you want to cancel / remove "${name}" from the system?`
+        `Are you sure you want to cancel / remove "${name}" from the system?`,
       )
     ) {
       return;
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000";
 
     try {
       // 1. Try Next.js proxy
@@ -272,7 +279,7 @@ export function AdminDashboard() {
         prev.filter((dest) => {
           const destId = dest._id || dest.id;
           return destId !== idToDelete;
-        })
+        }),
       );
     } catch (err) {
       console.warn("Error deleting destination:", err);
@@ -284,16 +291,18 @@ export function AdminDashboard() {
     const current = bookings.find((b) => b.id === id);
     if (!current) return;
 
-    const nextStatus: "Confirmed" | "Pending" | "Cancelled" =
+    const nextStatus: "Confirmed" | "Completed" | "Cancelled" | "Pending" =
       current.status === "Pending"
         ? "Confirmed"
         : current.status === "Confirmed"
-        ? "Cancelled"
-        : "Pending";
+          ? "Completed"
+          : current.status === "Completed" || current.status === "Complete"
+            ? "Cancelled"
+            : "Pending";
 
     // Optimistically update local state
     setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: nextStatus } : b))
+      prev.map((b) => (b.id === id ? { ...b, status: nextStatus } : b)),
     );
 
     try {
@@ -334,13 +343,13 @@ export function AdminDashboard() {
   // Calculate dynamic stats
   const totalCount = destinations.length;
   const categoriesCount = new Set(
-    destinations.map((d) => (d.category || "General").toLowerCase())
+    destinations.map((d) => (d.category || "General").toLowerCase()),
   ).size;
   const avgPrice =
     totalCount > 0
       ? Math.round(
           destinations.reduce((acc, d) => acc + (Number(d.price) || 0), 0) /
-            totalCount
+            totalCount,
         )
       : 0;
 
@@ -362,7 +371,8 @@ export function AdminDashboard() {
             Admin Management
           </h1>
           <p className="mt-2 text-sm sm:text-base text-gray-500 font-normal">
-            Manage travel packages, update details, handle cancellations, and monitor bookings
+            Manage travel packages, update details, handle cancellations, and
+            monitor bookings
           </p>
         </div>
 
@@ -372,7 +382,9 @@ export function AdminDashboard() {
             onClick={handleRefresh}
             className="flex items-center gap-2 border border-gray-300 hover:border-gray-800 text-gray-700 px-3.5 py-2 text-xs sm:text-sm font-medium transition-colors cursor-pointer"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+            />
             <span>Refresh</span>
           </button>
 
@@ -581,7 +593,10 @@ export function AdminDashboard() {
                   filteredDestinations.map((item, index) => {
                     const id = item._id || item.id || String(index);
                     const name =
-                      item.destinationName || item.name || item.title || "Bali Paradise";
+                      item.destinationName ||
+                      item.name ||
+                      item.title ||
+                      "Bali Paradise";
                     const country = item.country || "Indonesia";
                     const category = item.category || "Beach";
                     const price = item.price ?? 2700;
@@ -740,13 +755,20 @@ export function AdminDashboard() {
                   </tr>
                 ) : (
                   bookings.map((b) => (
-                    <tr key={b.id} className="hover:bg-gray-50/70 transition-colors">
+                    <tr
+                      key={b.id}
+                      className="hover:bg-gray-50/70 transition-colors"
+                    >
                       <td className="px-5 py-4 font-mono text-xs text-gray-500 font-medium">
                         {b.id}
                       </td>
                       <td className="px-5 py-4">
-                        <div className="font-medium text-gray-900">{b.customerName}</div>
-                        <div className="text-xs text-gray-500">{b.customerEmail}</div>
+                        <div className="font-medium text-gray-900">
+                          {b.customerName}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {b.customerEmail}
+                        </div>
                       </td>
                       <td className="px-5 py-4 font-medium text-gray-800">
                         {b.destinationName}
@@ -756,16 +778,21 @@ export function AdminDashboard() {
                         <div className="text-gray-400">{b.guests} Guests</div>
                       </td>
                       <td className="px-5 py-4 font-semibold text-gray-900">
-                        ${(Number(b.totalPrice ?? b.price) || 0).toLocaleString()}
+                        $
+                        {(
+                          Number(b.totalPrice ?? b.price) || 0
+                        ).toLocaleString()}
                       </td>
                       <td className="px-5 py-4">
                         <span
                           className={`inline-block px-2.5 py-0.5 text-xs font-medium uppercase tracking-wider ${
-                            b.status === "Confirmed"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : b.status === "Pending"
-                              ? "bg-amber-50 text-amber-700 border border-amber-200"
-                              : "bg-red-50 text-red-700 border border-red-200"
+                            b.status === "Completed" || b.status === "Complete"
+                              ? "bg-purple-50 text-purple-700 border border-purple-200"
+                              : b.status === "Confirmed"
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                : b.status === "Pending"
+                                  ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                  : "bg-red-50 text-red-700 border border-red-200"
                           }`}
                         >
                           {b.status}
@@ -798,10 +825,10 @@ export function AdminDashboard() {
             </h3>
             <div className="space-y-4">
               {Array.from(
-                new Set(destinations.map((d) => d.category || "General"))
+                new Set(destinations.map((d) => d.category || "General")),
               ).map((cat) => {
                 const count = destinations.filter(
-                  (d) => (d.category || "General") === cat
+                  (d) => (d.category || "General") === cat,
                 ).length;
                 const percentage =
                   totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;

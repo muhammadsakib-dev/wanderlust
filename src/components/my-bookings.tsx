@@ -163,6 +163,8 @@ export function MyBookings() {
         /* Vertical List of Booking Cards */
         <div className="space-y-6">
           {bookings.map((booking) => {
+            const isCompleted =
+              booking.status === "Completed" || booking.status === "Complete";
             const isConfirmed = booking.status === "Confirmed";
             const isPending = booking.status === "Pending";
             const isCancelled = booking.status === "Cancelled";
@@ -173,7 +175,7 @@ export function MyBookings() {
                 className="bg-white border border-gray-200 shadow-xs p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all hover:shadow-sm"
               >
                 {/* Left: Destination Thumbnail */}
-                <div className="relative w-full md:w-[280px] lg:w-[320px] aspect-[16/10] overflow-hidden bg-gray-100 shrink-0">
+                <div className="relative w-full md:w-70 lg:w-[320px] aspect-16/10 overflow-hidden bg-gray-100 shrink-0">
                   <Image
                     src={
                       booking.imageUrl ||
@@ -191,23 +193,30 @@ export function MyBookings() {
                 <div className="flex-1 min-w-0">
                   {/* Status Pill Badge */}
                   <div>
+                    {isCompleted && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                        <CheckCircle2 className="w-3.5 h-3.5 stroke-2" />
+                        <span>Completed</span>
+                      </span>
+                    )}
+
                     {isConfirmed && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#eaf8ee] text-[#16a34a] border border-[#bbf7d0]">
-                        <CheckCircle2 className="w-3.5 h-3.5 stroke-[2]" />
+                        <CheckCircle2 className="w-3.5 h-3.5 stroke-2" />
                         <span>Confirmed</span>
                       </span>
                     )}
 
                     {isPending && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#fff8eb] text-[#d97706] border border-[#fef3c7]">
-                        <Clock className="w-3.5 h-3.5 stroke-[2]" />
+                        <Clock className="w-3.5 h-3.5 stroke-2" />
                         <span>Pending</span>
                       </span>
                     )}
 
                     {isCancelled && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">
-                        <XCircle className="w-3.5 h-3.5 stroke-[2]" />
+                        <XCircle className="w-3.5 h-3.5 stroke-2" />
                         <span>Cancelled</span>
                       </span>
                     )}
@@ -257,7 +266,7 @@ export function MyBookings() {
                     href={`/destinations/${booking.destinationId || "1"}`}
                     className="bg-[#14a1bf] hover:bg-[#108fa9] text-white px-5 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 rounded-none cursor-pointer"
                   >
-                    <Eye className="w-4 h-4 stroke-[2]" />
+                    <Eye className="w-4 h-4 stroke-2" />
                     <span>View</span>
                   </Link>
                 </div>

@@ -4,49 +4,42 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Shield, Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
+import { loginAdminAction } from "@/app/admin/actions";
 
 export function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/admin";
 
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
 
-  const handleFillDemo = () => {
-    setEmail("admin@wanderlust.com");
-    setPassword("admin123");
-    setErrorMessage("");
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage("");
     setIsLoading(true);
 
-    setTimeout(() => {
-      // Validate credentials
-      const validEmail = email.trim().toLowerCase() === "admin@wanderlust.com";
-      const validPass = password.trim() === "admin123";
+    const formData = new FormData(e.currentTarget);
 
-      if (validEmail && validPass) {
+    try {
+      const res = await loginAdminAction(formData);
+
+      if (res.success) {
         if (typeof window !== "undefined") {
           localStorage.setItem("wanderlust_admin_session", "true");
-          document.cookie =
-            "wanderlust_admin_session=true; path=/; max-age=86400; SameSite=Lax";
         }
         router.push(callbackUrl);
         router.refresh();
       } else {
-        setErrorMessage(
-          "Invalid administrator credentials. Try demo credentials: admin@wanderlust.com / admin123"
-        );
+        setErrorMessage(res.error || "Invalid administrator credentials.");
         setIsLoading(false);
       }
-    }, 500);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to verify admin credentials.";
+      setErrorMessage(msg);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -86,7 +79,7 @@ export function AdminLoginForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-4.5">
+        <form onSubmit={onSubmit} className="space-y-4 sm:space-y-4.5">
           {/* Admin Email */}
           <div>
             <label
@@ -99,11 +92,11 @@ export function AdminLoginForm() {
               <Mail className="absolute left-3.5 w-4 h-4 text-gray-400 stroke-[1.75]" />
               <input
                 id="admin-email"
+                name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@wanderlust.com"
+                placeholder="Enter admin email"
                 required
+                autoComplete="email"
                 className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-gray-50/70 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#14a1bf] focus:bg-white transition-colors"
               />
             </div>
@@ -121,11 +114,11 @@ export function AdminLoginForm() {
               <Lock className="absolute left-3.5 w-4 h-4 text-gray-400 stroke-[1.75]" />
               <input
                 id="admin-password"
+                name="password"
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter admin password"
                 required
+                autoComplete="current-password"
                 className="w-full pl-10 pr-10 py-2.5 text-sm bg-gray-50/70 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#14a1bf] focus:bg-white transition-colors"
               />
               <button
@@ -155,20 +148,7 @@ export function AdminLoginForm() {
             </button>
           </div>
         </form>
-
-        {/* Demo Credentials Quick Fill */}
-        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-          <p className="text-xs text-gray-400 mb-2">Demo Testing Credentials:</p>
-          <button
-            type="button"
-            onClick={handleFillDemo}
-            className="text-xs font-medium text-[#14a1bf] hover:underline cursor-pointer"
-          >
-            Autofill (admin@wanderlust.com / admin123)
-          </button>
-        </div>
       </div>
     </div>
   );
 }
-

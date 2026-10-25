@@ -1,5 +1,6 @@
 "use client";
 
+// Essential Imports
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,11 +9,14 @@ import { User, Menu, X, LogOut } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
 
 export function Navbar() {
+
+  // Router and State Management
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
 
+  // Determine Active Route
   const isHome = pathname === "/";
   const isDestinations = pathname.startsWith("/destinations");
   const isBookings = pathname === "/bookings";
@@ -21,6 +25,7 @@ export function Navbar() {
   const isProfile = pathname === "/profile";
   const isAdmin = pathname.startsWith("/admin");
 
+  // Handle User Sign Out
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -95,7 +100,10 @@ export function Navbar() {
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
           {session?.user ? (
+
+            // if user is logged in
             <>
+            {/* User Profile Link */}
               <Link
                 href="/profile"
                 className={`flex items-center gap-2 text-[15px] font-medium tracking-wide transition-colors ${
@@ -104,13 +112,20 @@ export function Navbar() {
                     : "text-gray-800 hover:text-[#14a1bf]"
                 }`}
               >
+
+                {/* User Avatar or Initial */}
                 <div className="w-8 h-8 rounded-full bg-[#14a1bf]/10 text-[#14a1bf] flex items-center justify-center font-semibold text-xs uppercase">
                   {session.user.name ? session.user.name[0] : <User className="w-4 h-4" />}
                 </div>
-                <span className="truncate max-w-[120px]">
+
+                {/* User Name Display on Navbar */}
+                <span className="truncate max-w-30">
                   {session.user.name?.split(" ")[0] || "Profile"}
                 </span>
+
               </Link>
+
+              {/* Sign Out Button */}
               <button
                 type="button"
                 onClick={handleSignOut}
@@ -121,6 +136,8 @@ export function Navbar() {
               </button>
             </>
           ) : (
+            
+            // if user is not logged in
             <>
               <Link
                 href="/profile"

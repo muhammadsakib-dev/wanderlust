@@ -7,7 +7,7 @@ export interface Booking {
   travelDate?: string;
   price?: number | string;
   totalPrice?: number | string;
-  status: "Confirmed" | "Pending" | "Cancelled";
+  status: "Confirmed" | "Pending" | "Cancelled" | "Completed" | "Complete";
   imageUrl?: string;
   userEmail?: string;
   customerEmail?: string;

@@ -11,18 +11,22 @@ export function SignupForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage("");
+
+    const formData = new FormData(e.currentTarget);
+    const data: Record<string, string> = Object.fromEntries(formData) as Record<string, string>;
+
+    const name = (data.name || "").trim();
+    const email = (data.email || "").trim();
+    const password = data.password || "";
+    const confirmPassword = data.confirmPassword || "";
 
     if (password !== confirmPassword) {
       setErrorMessage("Passwords do not match. Please re-enter.");
@@ -96,7 +100,7 @@ export function SignupForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-4.5">
+        <form onSubmit={onSubmit} className="space-y-4 sm:space-y-4.5">
           {/* Full Name */}
           <div>
             <label
@@ -109,11 +113,11 @@ export function SignupForm() {
               <User className="absolute left-3.5 w-4 h-4 text-gray-400 stroke-[1.75]" />
               <input
                 id="name"
+                name="name"
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
                 required
+                autoComplete="name"
                 className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-gray-50/70 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#14a1bf] focus:bg-white transition-colors"
               />
             </div>
@@ -131,11 +135,11 @@ export function SignupForm() {
               <Mail className="absolute left-3.5 w-4 h-4 text-gray-400 stroke-[1.75]" />
               <input
                 id="email"
+                name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
+                autoComplete="email"
                 className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-gray-50/70 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#14a1bf] focus:bg-white transition-colors"
               />
             </div>
@@ -153,11 +157,11 @@ export function SignupForm() {
               <Lock className="absolute left-3.5 w-4 h-4 text-gray-400 stroke-[1.75]" />
               <input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Create a password"
                 required
+                autoComplete="new-password"
                 className="w-full pl-10 pr-10 py-2.5 text-sm bg-gray-50/70 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#14a1bf] focus:bg-white transition-colors"
               />
               <button
@@ -187,11 +191,11 @@ export function SignupForm() {
               <Lock className="absolute left-3.5 w-4 h-4 text-gray-400 stroke-[1.75]" />
               <input
                 id="confirmPassword"
+                name="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
                 required
+                autoComplete="new-password"
                 className="w-full pl-10 pr-10 py-2.5 text-sm bg-gray-50/70 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#14a1bf] focus:bg-white transition-colors"
               />
               <button
